@@ -2,105 +2,151 @@ import SwiftUI
 
 import SwiftUI
 struct ContentView: View {
-	@State private var image: UIImage? = UIImage(named: "123.png")
+	@State private var image: UIImage? = UIImage(named: "walls.png")
 	@State private var predictions: [PredictionDetails] = []
-	@State private var scaledHeight: CGFloat
-	@State private var scaledWidth: CGFloat
+	@State private var displayImage: UIImage?
+	@State private var predictionsByCategory: [String: [PredictionDetails]] = [:]
 	
 	var body: some View {
 		GeometryReader { geometry in
-			ZStack {
-				if let uiImage = image {
-					Image(uiImage: uiImage)
-						.resizable()
-						.scaledToFit()
-						.frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
-						.overlay(overlayView(uiImage: uiImage, geometry: geometry))
-				}
-			}
+			
 			VStack {
-				Spacer()
 				Button("Upload Image") {
 					uploadImage()
+					displayImage = image
 				}
 				.padding()
 				.background(Color.blue)
 				.foregroundColor(Color.white)
 				.clipShape(RoundedRectangle(cornerRadius: 8))
+				
+				Button("Draw Bounding Boxes") {
+					if let uiImage = image {
+						self.displayImage = drawBoundingBoxes(on: uiImage, predictions: predictions)
+					}
+				}
+				.padding()
+				.background(Color.green)
+				.foregroundColor(Color.white)
+				.clipShape(RoundedRectangle(cornerRadius: 8))
+				if let displayImage = displayImage {
+					Image(uiImage: displayImage)
+						.resizable()
+						.scaledToFit()
+						.frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
+				}
+				Spacer()
+				
+				
 			}
 		}
 		.onAppear {
-			uploadImage()
+//			xuploadImage()
 		}
+	}
+
+	
+	func handleAPIResponse(data: Data) {
+		print("handleAPIResponse(data: Data)")
+		do {
+			let decodedResponse = try JSONDecoder().decode([ObjectPredictionContainer].self, from: data)
+			DispatchQueue.main.async {
+				for prediction in decodedResponse.map({ $0.ObjectPrediction }) {
+					let categoryName = prediction.category.Category.name
+					if self.predictionsByCategory[categoryName] == nil {
+						self.predictionsByCategory[categoryName] = []
+					}
+					self.predictionsByCategory[categoryName]?.append(prediction)
+				}
+			}
+			print("Predictions by category: \(predictionsByCategory)")
+		} catch {
+			print("Failed to decode response: \(error)")
+		}
+	}
+	func getColor(forCategory category: String) -> Color {
+		print("getColor(forCategory category: String) -> Color")
+		switch category {
+			case "Pendant Light":
+				return .red
+			case "Duplex Outlet":
+				return .green
+			default:
+				return .blue
+		}
+	}
+	func drawBoundingBoxes(on image: UIImage, predictions: [PredictionDetails]) -> UIImage? {
+		// Begin a graphics context
+		
+		print("drawBoundingBoxes(on image: UIImage, predictions: [PredictionDetails]) -> UIImage? ")
+		UIGraphicsBeginImageContextWithOptions(image.size, false, image.scale)
+		guard let context = UIGraphicsGetCurrentContext() else { return nil }
+		image.draw(at: .zero) // Draw the base image
+		
+		// Set the properties for the bounding box
+		context.setStrokeColor(UIColor.red.cgColor)
+		context.setLineWidth(2)
+		
+		// Draw each bounding box
+		for prediction in predictions {
+			let bbox = parseBoundingBox(prediction.bbox.BoundingBox)
+			let rect = CGRect(x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height)
+			context.addRect(rect)
+			context.strokePath()
+		}
+		
+		// Retrieve the edited image
+		let newImage = UIGraphicsGetImageFromCurrentImageContext()
+		UIGraphicsEndImageContext()
+		
+		return newImage
 	}
 	
 	func overlayView(uiImage: UIImage, geometry: GeometryProxy) -> some View {
+		print("overlayView(uiImage: UIImage, geometry: GeometryProxy) -> some View ")
 		let imageScale = min(geometry.size.width / uiImage.size.width, geometry.size.height / uiImage.size.height)
 		let offsetX = (geometry.size.width - (uiImage.size.width * imageScale)) / 2
 		let offsetY = (geometry.size.height - (uiImage.size.height * imageScale)) / 2
-
-		print("offsetX: \(offsetX)")
-		print("offsetY: \(offsetY)")
-
-
-		return ForEach(predictions, id: \.self) { prediction in
-			let bbox = parseBoundingBox(prediction.bbox.BoundingBox)
-			if bbox.width > 0 && bbox.height > 0 {
-				scaledWidth = bbox.width * imageScale
-				scaledHeight = bbox.height * imageScale
-
-				Rectangle()
-				
-					.stroke(Color.red, lineWidth: 2)
-					.frame(width: scaledWidth, height: scaledHeight)
-					.offset(x: (bbox.x * imageScale) + offsetX, y: (bbox.y * imageScale) + offsetY)
-			}
-			
-		}
 		
+		return ForEach(predictionsByCategory.keys.sorted(), id: \.self) { category in
+			ForEach(predictionsByCategory[category]!, id: \.self) { prediction in
+				let bbox = parseBoundingBox(prediction.bbox.BoundingBox)
+				if bbox.width > 0 && bbox.height > 0 {
+					Rectangle()
+						.stroke(getColor(forCategory: category), lineWidth: 2)
+						.frame(width: bbox.width * imageScale, height: bbox.height * imageScale)
+						.offset(x: (bbox.x * imageScale) + offsetX, y: (bbox.y * imageScale) + offsetY)
+				}
+			}
+		}
 	}
-
-
-	func parseBoundingBox(_ boundingBox: String) -> (x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {
-		// Remove parentheses and whitespaces then split by comma
-		let trimmedString = boundingBox.trimmingCharacters(in: CharacterSet(charactersIn: " ()"))
-		let components = trimmedString.split(separator: ",").map { Double($0.trimmingCharacters(in: .whitespaces)) ?? 0 }
-		let x = CGFloat(components[0])
-		let y = CGFloat(components[1])
-		let x2 = CGFloat(components[2])
-		let y2 = CGFloat(components[3])
-		print("Before: x: \(x) y: \(y) y2: \(x2) x2: \(y2)")
-		print("Width before: \(max(x2 - x, 0)) Height before: \(max(y2 - y, 0))")
-		return (x: x, y: y, width: max(x2 - x, 0), height: max(y2 - y, 0))
-	}
-//	
-//	func translateX(_ boundingBox: String, geometry: GeometryProxy) -> CGFloat {
-//		let bbox = parseBoundingBox(boundingBox)
-//		let x = bbox.x
-//		return CGFloat(x / Double(image!.size.width) * geometry.size.width)
-//	}
-//	
-//	func translateY(_ boundingBox: String, geometry: GeometryProxy) -> CGFloat {
-//		let bbox = parseBoundingBox(boundingBox)
-//		let y = bbox.y
-//		return CGFloat(y / Double(image!.size.height) * geometry.size.height)
-//	}
 	
-//	func scaleWidth(_ boundingBox: String, geometry: GeometryProxy) -> CGFloat {
-//		let bbox = parseBoundingBox(boundingBox)
-//		let width = bbox.width
-//		return CGFloat(width / Double(image!.size.width) * geometry.size.width)
-//	}
-//	
-//	func scaleHeight(_ boundingBox: String, geometry: GeometryProxy) -> CGFloat {
-//		let bbox = parseBoundingBox(boundingBox)
-//		let height = bbox.height
-//		return CGFloat(height / Double(image!.size.height) * geometry.size.height)
-//	}
-
+	func parseBoundingBox(_ boundingBox: String) -> (x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {
+		print("parseBoundingBox(_ boundingBox: String) -> (x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat)")
+		let components = boundingBox.trimmingCharacters(in: CharacterSet(charactersIn: " ()"))
+			.split(separator: ",")
+			.map { substring -> CGFloat in
+				let number = Double(substring.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0
+				return CGFloat(number)
+			}
+		if components.count == 4 {
+			let x = components[0]
+			let y = components[1]
+			let x2 = components[2]
+			let y2 = components[3]
+			print("Before: x: \(x) y: \(y) y2: \(x2) x2: \(y2)")
+			print("Width before: \(max(x2 - x, 0)) Height before: \(max(y2 - y, 0))")
+			return (x: x, y: y, width: max(x2 - x, 0), height: max(y2 - y, 0))
+		} else {
+			// Return zeros if the components aren't as expected to avoid crashing
+			return (x: 0, y: 0, width: 0, height: 0)
+		}
+	}
+	
 	
 	func uploadImage() {
-		guard let url = URL(string: "http://10.0.1.29:5000/predict") else {
+		print("uploadImage()")
+		guard let url = URL(string: "http://10.0.1.29:5004/predict") else {
 			showAlert(message: "Invalid server URL")
 			return
 		}
@@ -148,16 +194,17 @@ struct ContentView: View {
 					// Update UI or state with the decoded response
 					self.predictions = decodedResponse.map { $0.ObjectPrediction }
 				}
-				print("Decoded response: \(decodedResponse)")
+//				print("Decoded response: \(decodedResponse)")
 			} catch {
 				print("Failed to decode response: \(error)")
 			}
 		}
+
 		task.resume()
 	}
-
-	
 }
+
+
 func showAlert(message: String) {
 	// Method to show an alert or handle the error visually in your app
 	print(message)
@@ -173,6 +220,14 @@ struct PredictionDetails: Codable, Hashable {
 	let mask: String?
 	let score: PredictionScore
 	let category: CategoryDetails
+	
+	static func == (lhs: PredictionDetails, rhs: PredictionDetails) -> Bool {
+		return lhs.category.Category.name == rhs.category.Category.name
+	}
+	
+	func hash(into hasher: inout Hasher) {
+		hasher.combine(category.Category.name)
+	}
 }
 
 // Bounding box information
@@ -197,14 +252,4 @@ struct Category: Codable, Hashable {
 	let id: Int
 	let name: String
 }
-// Update the decoding part if needed
 
-
-//@main
-//struct YourAppName: App {
-//	var body: some Scene {
-//		WindowGroup {
-//			ContentView()
-//		}
-//	}
-//}

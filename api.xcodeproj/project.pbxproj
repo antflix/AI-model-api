@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CE1F44112BC8C38000EF6D89 /* SwiftUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE1F44102BC8C38000EF6D89 /* SwiftUIView.swift */; };
+		CE1F44132BCA970B00EF6D89 /* walls.png in Resources */ = {isa = PBXBuildFile; fileRef = CE1F44122BCA970B00EF6D89 /* walls.png */; };
 		CE43B69A2BC62A6F00E0A982 /* apiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE43B6992BC62A6F00E0A982 /* apiApp.swift */; };
 		CE43B69C2BC62A6F00E0A982 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE43B69B2BC62A6F00E0A982 /* ContentView.swift */; };
 		CE43B69E2BC62A7100E0A982 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE43B69D2BC62A7100E0A982 /* Assets.xcassets */; };
@@ -17,6 +18,7 @@
 
 /* Begin PBXFileReference section */
 		CE1F44102BC8C38000EF6D89 /* SwiftUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIView.swift; sourceTree = "<group>"; };
+		CE1F44122BCA970B00EF6D89 /* walls.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = walls.png; sourceTree = "<group>"; };
 		CE43B6962BC62A6F00E0A982 /* api.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = api.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE43B6992BC62A6F00E0A982 /* apiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = apiApp.swift; sourceTree = "<group>"; };
 		CE43B69B2BC62A6F00E0A982 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -59,6 +61,7 @@
 				CE43B69B2BC62A6F00E0A982 /* ContentView.swift */,
 				CE1F44102BC8C38000EF6D89 /* SwiftUIView.swift */,
 				CE43B69D2BC62A7100E0A982 /* Assets.xcassets */,
+				CE1F44122BCA970B00EF6D89 /* walls.png */,
 				CE43B6A72BC62BA300E0A982 /* 123.png */,
 				CE43B69F2BC62A7100E0A982 /* Preview Content */,
 			);
@@ -134,6 +137,7 @@
 				CE43B6A82BC62BA400E0A982 /* 123.png in Resources */,
 				CE43B6A12BC62A7100E0A982 /* Preview Assets.xcassets in Resources */,
 				CE43B69E2BC62A7100E0A982 /* Assets.xcassets in Resources */,
+				CE1F44132BCA970B00EF6D89 /* walls.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
