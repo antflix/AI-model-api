@@ -67,14 +67,25 @@ struct ContentView: View {
 	func getColor(forCategory category: String) -> Color {
 		print("getColor(forCategory category: String) -> Color")
 		switch category {
-			case "Pendant Light":
+			case "Data Box":
 				return .red
-			case "Duplex Outlet":
+			case "Dedicated Outlet":
 				return .green
+			case "Duplex Outlet":
+				return .red
+			case "Floor Box":
+				return .yellow
+			case "Furniture Feed":
+				return .blue
+			case "Quad Outlet":
+				return .orange
+			case "TV Box":
+				return .purple
 			default:
 				return .blue
 		}
 	}
+//	{0: 'Data Box', 1: 'Dedicated Outlet', 2: 'Duplex Outlet', 3: 'Floor Box', 4: 'Furniture Feed', 5: 'Quad Outlet', 6: 'TV Box'}
 	func drawBoundingBoxes(on image: UIImage, predictions: [PredictionDetails]) -> UIImage? {
 		// Begin a graphics context
 		
@@ -134,8 +145,8 @@ struct ContentView: View {
 			let y = components[1]
 			let x2 = components[2]
 			let y2 = components[3]
-			print("Before: x: \(x) y: \(y) y2: \(x2) x2: \(y2)")
-			print("Width before: \(max(x2 - x, 0)) Height before: \(max(y2 - y, 0))")
+//			print("Before: x: \(x) y: \(y) y2: \(x2) x2: \(y2)")
+//			print("Width before: \(max(x2 - x, 0)) Height before: \(max(y2 - y, 0))")
 			return (x: x, y: y, width: max(x2 - x, 0), height: max(y2 - y, 0))
 		} else {
 			// Return zeros if the components aren't as expected to avoid crashing
@@ -146,7 +157,7 @@ struct ContentView: View {
 	
 	func uploadImage() {
 		print("uploadImage()")
-		guard let url = URL(string: "http://10.0.1.29:5004/predict") else {
+		guard let url = URL(string: "http://10.0.1.29:5000/predict") else {
 			showAlert(message: "Invalid server URL")
 			return
 		}
@@ -194,7 +205,7 @@ struct ContentView: View {
 					// Update UI or state with the decoded response
 					self.predictions = decodedResponse.map { $0.ObjectPrediction }
 				}
-//				print("Decoded response: \(decodedResponse)")
+				print("Decoded response: \(decodedResponse)")
 			} catch {
 				print("Failed to decode response: \(error)")
 			}
