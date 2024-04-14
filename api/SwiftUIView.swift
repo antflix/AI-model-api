@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftyJSON
+import ZoomImageViewer
 struct CategoryDetail {
 	let name: String
 	var count: Int
@@ -15,13 +16,16 @@ struct ContentView: View {
 	@State private var image: UIImage? = UIImage(named: "walls.png")
 	@State private var predictions: [ObjectPrediction] = []
 	@State private var displayImage: UIImage?
-	@State private var predictionsByCategory: [String: [ObjectPrediction]] = [:]
+	@State private var classCounts: [String: Int] = [:]
 	@State private var scale: CGFloat = 1.0
 	@State private var lastScaleValue: CGFloat = 1.0
 	@State private var offset: CGSize = .zero
 	@State private var lastOffset: CGSize = .zero
 	@State private var categoryColors: [String: UIColor] = [:]
 	@State private var usedColors: [UIColor] = []
+	@State private var isShowingFullScreen = false
+	@State private var uiImage: UIImage? = nil
+
 	let mainColors: [UIColor] = [
 		.red, .blue, .green, .purple, .orange, .yellow, .magenta, .cyan
 	]
@@ -29,63 +33,96 @@ struct ContentView: View {
 	var body: some View {
 		GeometryReader { geometry in
 			ScrollView([.horizontal, .vertical], showsIndicators: false) {
-				VStack {
-					// Button for uploading image
-					Button("Upload Image") {
-						uploadImage()
-						displayImage = image
-					}
-					.padding()
-					.background(Color.blue)
-					.foregroundColor(Color.white)
-					.clipShape(RoundedRectangle(cornerRadius: 8))
-					
-					// Button for drawing bounding boxes
-					Button("Draw Bounding Boxes") {
-						if let uiImage = image {
-							self.displayImage = drawBoundingBoxes(on: uiImage, predictions: predictions)
+				ZStack(alignment: .topTrailing) {  // Overlay content on the image
+					VStack {
+						Button("Upload Image") {
+							uploadImage()
+							displayImage = image
+						}
+						.padding()
+						.background(Color.blue)
+						.foregroundColor(Color.white)
+						.clipShape(RoundedRectangle(cornerRadius: 8))
+						
+						Button("Draw Bounding Boxes") {
+							if let uiImage = image {
+								self.displayImage = drawBoundingBoxes(on: uiImage, predictions: predictions)
+							}
+						}
+						.padding()
+						.background(Color.green)
+						.foregroundColor(Color.white)
+						.clipShape(RoundedRectangle(cornerRadius: 8))
+						Spacer()
+						// Display the image
+						if let displayImage = displayImage {
+							ScrollView([.horizontal, .vertical], showsIndicators: false) {
+								
+								Image(uiImage: displayImage)
+									.resizable()
+									.scaledToFit()
+									.scaleEffect(scale)
+									.onTapGesture {
+										uiImage = displayImage
+									}
+									.offset(x: offset.width, y: offset.height)
+									.gesture(
+										MagnificationGesture().onChanged { value in
+											let delta = value / self.lastScaleValue
+											self.lastScaleValue = value
+											self.scale *= delta
+										}
+											.onEnded { _ in
+												self.lastScaleValue = 1.0
+											}
+									)
+									.simultaneousGesture(
+										DragGesture().onChanged { value in
+											let delta = CGSize(
+												width: value.translation.width + self.lastOffset.width,
+												height: value.translation.height + self.lastOffset.height)
+											self.offset = delta
+										}
+											.onEnded { _ in
+												self.lastOffset = self.offset
+											}
+									)
+									.frame(width: geometry.size.width, height: geometry.size.height)
+							}
+						} else {
+							Text("Image not available")
 						}
 					}
-					.padding()
-					.background(Color.green)
-					.foregroundColor(Color.white)
-					.clipShape(RoundedRectangle(cornerRadius: 8))
 					
-					// Display the image
-					if let displayImage = displayImage {
-						Image(uiImage: displayImage)
-							.resizable()
-							.scaledToFit()
-							.scaleEffect(scale)
-							.offset(x: offset.width, y: offset.height)
-							.gesture(
-								MagnificationGesture().onChanged { value in
-									let delta = value / self.lastScaleValue
-									self.lastScaleValue = value
-									self.scale *= delta
-								}.onEnded { _ in
-									self.lastScaleValue = 1.0
-								}
-							)
-							.gesture(
-								DragGesture().onChanged { value in
-									let delta = CGSize(
-										width: value.translation.width + self.lastOffset.width,
-										height: value.translation.height + self.lastOffset.height)
-									self.offset = delta
-									
-								}.onEnded { _ in
-									self.lastOffset = self.offset
-								}
-							)
-							.frame(width: geometry.size.width, height: geometry.size.height)
-					} else if image == nil {
-						Text("Image not available")
+					// List to show class counts, overlaid on the bottom right of the ZStack
+					if classCounts != [:] {
+						
+						List(classCounts.keys.sorted(), id: \.self) { key in
+							HStack {
+								Rectangle()
+									.fill(Color(getColor(forCategory: key)))  // Assuming you have a function to determine color
+									.frame(width: 20, height: 20)  // Size of the color square
+									.cornerRadius(5)  // Optional: adds rounded corners to the square
+								
+								Text("\(key): \(classCounts[key] ?? 0)")
+							}
+							.padding(2)
+						}
+						.frame(width: 200, height: 300)
+						.background(Color.black.opacity(0.5))
+						.cornerRadius(10)
 					}
-					Spacer()
+					
 				}
 			}
 		}
+		.overlay(
+			/// Auto rotating modifier is from FrameUp and is optional
+			
+				ZoomImageViewer(uiImage: $uiImage)
+			
+		)
+	
 	}
 	func uploadImage() {
 		print("METHOD: uploadImage()")
@@ -182,7 +219,7 @@ struct ContentView: View {
 //			print(jsonResponseString)
 			// Parse JSON data using SwiftyJSON
 			let json = JSON(jsonData)
-			print(json)
+//			print(json)
 			let objectPredictions = json.arrayValue.map { item -> ObjectPrediction in
 				return ObjectPrediction(
 					id: item["ObjectPrediction"]["category"]["Category"]["id"].intValue,
@@ -198,8 +235,12 @@ struct ContentView: View {
 			DispatchQueue.main.async {
 				self.predictions = objectPredictions
 				// Print the entire array of predictions
-				print("All predictions:", self.predictions)
-				
+//				print("All predictions:", self.predictions)
+//				var counts: [String: Int] = [:]
+//				objectPredictions.forEach { prediction in
+//					counts[prediction.categoryName, default: 0] += 1
+//				}
+//				classCounts = counts
 				// Check if the array is not empty and print the first element
 				if let firstPrediction = self.predictions.first {
 					print("First prediction category name:", firstPrediction.categoryName)
@@ -220,6 +261,7 @@ struct ContentView: View {
 		image.draw(at: .zero) // Draw the base image
 		
 		var categoryCounts: [String: Int] = [:]
+		
 		
 		// Draw each bounding box
 		for prediction in predictions {
@@ -247,10 +289,18 @@ struct ContentView: View {
 			drawText(categoryName: categoryName, count: count, at: CGPoint(x: bbox.x, y: bbox.y), in: context)
 		}
 		
+		
+		// Debugging output
+		print("Category counts:", self.classCounts)
 		// Retrieve the edited image
 		let newImage = UIGraphicsGetImageFromCurrentImageContext()
 		UIGraphicsEndImageContext()
 		
+		// Update classCounts on the main thread
+		DispatchQueue.main.async {
+			self.classCounts = categoryCounts
+			print("!!!!!!\(self.classCounts)")
+		}
 		return newImage
 	}
 	func getColor(forCategory category: String) -> UIColor {

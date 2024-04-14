@@ -1,5 +1,5 @@
 {
-  "originHash" : "def7d170524c5bbdd72b33bad8ae29549b3305eb393afc1e48b0dfc5c154d850",
+  "originHash" : "18a64a39e73d7e090dd974dcc26da18f2c711b6457b026771a4b94363c47d80d",
   "pins" : [
     {
       "identity" : "swiftyjson",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "af76cf3ef710b6ca5f8c05f3a31307d44a3c5828",
         "version" : "5.0.2"
+      }
+    },
+    {
+      "identity" : "zoomimageviewer",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ryanlintott/ZoomImageViewer",
+      "state" : {
+        "revision" : "32a1f7e60f82712c10205ab9be7eec67ec20eff5",
+        "version" : "0.4.1"
       }
     }
   ],

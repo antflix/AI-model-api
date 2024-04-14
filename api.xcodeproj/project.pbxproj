@@ -14,6 +14,7 @@
 		CE43B6A12BC62A7100E0A982 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE43B6A02BC62A7100E0A982 /* Preview Assets.xcassets */; };
 		CE43B6A82BC62BA400E0A982 /* 123.png in Resources */ = {isa = PBXBuildFile; fileRef = CE43B6A72BC62BA300E0A982 /* 123.png */; };
 		CE7C7C232BCC2EE7006CA976 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = CE7C7C222BCC2EE7006CA976 /* SwiftyJSON */; };
+		CE7C7C2B2BCC5E52006CA976 /* ZoomImageViewer in Frameworks */ = {isa = PBXBuildFile; productRef = CE7C7C2A2BCC5E52006CA976 /* ZoomImageViewer */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE7C7C232BCC2EE7006CA976 /* SwiftyJSON in Frameworks */,
+				CE7C7C2B2BCC5E52006CA976 /* ZoomImageViewer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,6 +95,7 @@
 			name = api;
 			packageProductDependencies = (
 				CE7C7C222BCC2EE7006CA976 /* SwiftyJSON */,
+				CE7C7C2A2BCC5E52006CA976 /* ZoomImageViewer */,
 			);
 			productName = api;
 			productReference = CE43B6962BC62A6F00E0A982 /* api.app */;
@@ -124,6 +127,7 @@
 			mainGroup = CE43B68D2BC62A6F00E0A982;
 			packageReferences = (
 				CE7C7C212BCC2EE7006CA976 /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
+				CE7C7C292BCC5E52006CA976 /* XCRemoteSwiftPackageReference "ZoomImageViewer" */,
 			);
 			productRefGroup = CE43B6972BC62A6F00E0A982 /* Products */;
 			projectDirPath = "";
@@ -213,7 +217,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -270,7 +274,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -296,7 +300,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -326,7 +330,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -372,6 +376,14 @@
 				minimumVersion = 5.0.2;
 			};
 		};
+		CE7C7C292BCC5E52006CA976 /* XCRemoteSwiftPackageReference "ZoomImageViewer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ryanlintott/ZoomImageViewer";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.4.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -379,6 +391,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = CE7C7C212BCC2EE7006CA976 /* XCRemoteSwiftPackageReference "SwiftyJSON" */;
 			productName = SwiftyJSON;
+		};
+		CE7C7C2A2BCC5E52006CA976 /* ZoomImageViewer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CE7C7C292BCC5E52006CA976 /* XCRemoteSwiftPackageReference "ZoomImageViewer" */;
+			productName = ZoomImageViewer;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
